@@ -14,6 +14,9 @@ public class Main {
     private int vertices;
     private LinkedList<Integer> adj[];
     public int numeroTesteAtual;
+    String resposta;
+    String respostaConvertida;
+    boolean visitado[];
 
     // Construtor
     Main(int vertices){
@@ -22,6 +25,9 @@ public class Main {
         for(int i =0; i < vertices; i++){
             adj[i] = new LinkedList();
         }
+        resposta = "";
+        respostaConvertida = "";
+        visitado = new boolean[vertices];
     }
 
     void adcionaAresta(int v, int w){
@@ -147,53 +153,56 @@ public class Main {
         }
     }
 
-    void componentesConexos(){
-        String [] resposta = new String[vertices];
-        String [] respostaConvertida = new String[vertices];
-        for(int y = 0; y < adj.length; y++){
-            if(adj[y].size() == 0) {
-                resposta[y] = Integer.toString(y) + ",";
-                respostaConvertida[y] = Character.toString(converteInt(y)) + ",";
-            }else{
-                for(int x = 0; x <= adj[y].size(); x++){
-                    boolean contem = false;
-                    int aux;
-                    if(x == 0){
-                        aux = y;
-                    } else{
-                        aux = adj[y].get(x-1);
-                    }
-                    for (int i = y; i >= 0; i--){
-                        if(respostaConvertida[i] != null &&
-                                respostaConvertida[i].contains(Character.toString(converteInt(aux)))) {
-                            contem = true;
-                        }
-                    }
-                    if(!contem){
-                        if(resposta[y] == null){
-                                resposta[y] = Integer.toString(y);
-                                resposta[y] = resposta[y] + ",";
-                                respostaConvertida[y] = Character.toString(converteInt(aux));
-                                respostaConvertida[y] = respostaConvertida[y] + ",";
-                            }else {
-                                resposta[y] = resposta[y] + aux + ",";
-                                respostaConvertida[y] = respostaConvertida[y] + converteInt(aux) + ",";
-                        }
-                    }
+    void buscaProfundidade(int y){
+        if(!visitado[y]){
+            visitado[y] = true;
+            Iterator<Integer> i = adj[y].listIterator();
+            resposta = resposta + Integer.toString(y);
+            respostaConvertida = respostaConvertida + Character.toString(converteInt(y));
+            while (i.hasNext()){
+                int prox = i.next();
+                if(!visitado[prox]){
+                    buscaProfundidade(prox);
                 }
             }
         }
-        System.out.println("Case #" + numeroTesteAtual + ":");
-        int componentesConectados = 0;
+    }
 
-        for(int y = 0; y < respostaConvertida.length; y++) {
-            if(respostaConvertida[y] != null) {
-                System.out.println(respostaConvertida[y]);
-                componentesConectados++;
+    String [] divideResposta (String respostaConvertida){
+        String[] respostaDividida = respostaConvertida.split(" ");
+        for(int i = 0; i < respostaDividida.length; i++){
+            if(!respostaDividida[i].equals("")){
+                char [] ordenado = respostaDividida[i].toCharArray();
+                respostaDividida[i] = "";
+                Arrays.sort(ordenado);
+                for (int j = 0; j < ordenado.length; j++){
+                    respostaDividida[i] = respostaDividida[i] + ordenado[j] + ",";
+                }
+            }
+        }
+        return respostaDividida;
+    }
+
+
+    void componentesConexos(){
+
+        for(int y = 0; y < adj.length; y++){
+            buscaProfundidade(y);
+            resposta = resposta + " ";
+            respostaConvertida = respostaConvertida + " ";
+        }
+        String[] respostaDividida = divideResposta(respostaConvertida);
+        int componentesConectados = 0;
+        System.out.println("Case #" + numeroTesteAtual + ":");
+        for(int i = 0; i < respostaDividida.length; i++){
+            if(!respostaDividida[i].equals("")){
+                System.out.println(respostaDividida[i]);
+                componentesConectados ++;
             }
         }
         System.out.println(componentesConectados + " connected components");
         System.out.println();
+
     }
 
     public static void main(String[] args) {
